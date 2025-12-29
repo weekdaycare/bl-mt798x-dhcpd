@@ -22,6 +22,26 @@
 		system_led = "red:power";
 	};
 
+	mtd-layout {
+		layout@0 {
+			label = "default";
+			mtdids = "nmbm0=nmbm0";
+			mtdparts = "nmbm0:1024k(bl2),512k(u-boot-env),2048k(Factory),256k(bdinfo),2048k(fip),65536k(ubi)";
+		};
+
+		layout@1 {
+			label = "112m";
+			mtdids = "nmbm0=nmbm0";
+			mtdparts = "nmbm0:1024k(bl2),512k(u-boot-env),2048k(Factory),256k(bdinfo),2048k(fip),114688k(ubi)";
+		};
+
+		layout@2 {
+			label = "122m";
+			mtdids = "nmbm0=nmbm0";
+			mtdparts = "nmbm0:1024k(bl2),512k(u-boot-env),2048k(Factory),256k(bdinfo),2048k(fip),125184k(ubi)";
+		};
+	};
+
 	memory@40000000 {
 		device_type = "memory";
 		reg = <0x40000000 0x20000000>;
@@ -30,17 +50,17 @@
 	gpio-keys {
 		compatible = "gpio-keys";
 
-		button-reset {
+		key-reset {
 			label = "reset";
 			linux,code = <KEY_RESTART>;
-			gpios = <&gpio 1 GPIO_ACTIVE_LOW>;
+			gpios = <&pio 1 GPIO_ACTIVE_LOW>;
 		};
 
-		button-mode {
+		key-mode {
 			label = "mode";
 			linux,code = <EV_SW>;
 			linux,input-type = <BTN_0>;
-			gpios = <&gpio 0 GPIO_ACTIVE_HIGH>;
+			gpios = <&pio 0 GPIO_ACTIVE_HIGH>;
 			debounce-interval = <60>;
 		};
 	};
@@ -50,12 +70,12 @@
 
 		led_status: led-0 {
 			label = "red:power";
-			gpios = <&gpio 11 GPIO_ACTIVE_LOW>;
+			gpios = <&pio 11 GPIO_ACTIVE_LOW>;
 		};
 
 		led-1 {
 			label = "white:status";
-			gpios = <&gpio 10 GPIO_ACTIVE_LOW>;
+			gpios = <&pio 10 GPIO_ACTIVE_LOW>;
 		};
 	};
 
@@ -79,7 +99,7 @@
 	};
 };
 
-&pinctrl {
+&pio {
 	spi_flash_pins: spi0-pins-func-1 {
 		mux {
 			function = "flash";
@@ -88,14 +108,60 @@
 
 		conf-pu {
 			pins = "SPI0_CS", "SPI0_HOLD", "SPI0_WP";
-			drive-strength = <MTK_DRIVE_8mA>;
+			drive-strength = <MTK_DRIVE_4mA>;
 			bias-pull-up = <MTK_PUPD_SET_R1R0_11>;
 		};
 
 		conf-pd {
 			pins = "SPI0_CLK", "SPI0_MOSI", "SPI0_MISO";
-			drive-strength = <MTK_DRIVE_8mA>;
+			drive-strength = <MTK_DRIVE_4mA>;
 			bias-pull-down = <MTK_PUPD_SET_R1R0_11>;
+		};
+	};
+
+	spic_pins: spi1-pins-func-1 {
+		mux {
+			function = "spi";
+			groups = "spi1_1";
+		};
+	};
+
+	uart1_pins: spi1-pins-func-3 {
+		mux {
+			function = "uart";
+			groups = "uart1_2";
+		};
+	};
+
+	/* pin15 as pwm0 */
+	one_pwm_pins: one-pwm-pins {
+		mux {
+			function = "pwm";
+			groups = "pwm0_1";
+		};
+	};
+
+	/* pin15 as pwm0 and pin14 as pwm1 */
+	two_pwm_pins: two-pwm-pins {
+		mux {
+			function = "pwm";
+			groups = "pwm0_1", "pwm1_0";
+		};
+	};
+
+	/* pin15 as pwm0, pin14 as pwm1, pin7 as pwm2 */
+	three_pwm_pins: three-pwm-pins {
+		mux {
+			function = "pwm";
+			groups = "pwm0_1", "pwm1_0", "pwm2";
+		};
+	};
+
+	/* pin13 as pwm0, pin15 as pwm1, pin7 as pwm2 */
+	three_pwm_pins_1: three-pwm-pins {
+		mux {
+			function = "pwm";
+			groups = "pwm0_0", "pwm1_1", "pwm2";
 		};
 	};
 };
@@ -121,10 +187,14 @@
 	};
 };
 
-&uart0 {
+
+&pwm {
+	pinctrl-names = "default";
+	pinctrl-0 = <&two_pwm_pins>;
 	status = "okay";
 };
 
 &watchdog {
 	status = "disabled";
 };
+
